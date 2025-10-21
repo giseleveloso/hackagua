@@ -1,0 +1,96 @@
+package br.unitins.topicos1.service;
+
+import java.util.List;
+
+import br.unitins.topicos1.dto.MedidorDTO;
+import br.unitins.topicos1.dto.MedidorResponseDTO;
+import br.unitins.topicos1.model.Medidor;
+import br.unitins.topicos1.model.Usuario;
+import br.unitins.topicos1.repository.MedidorRepository;
+import br.unitins.topicos1.repository.UsuarioRepository;
+import br.unitins.topicos1.validation.ValidationException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+
+@ApplicationScoped
+public class MedidorServiceImpl implements MedidorService {
+
+    @Inject
+    public MedidorRepository medidorRepository;
+
+    @Inject
+    public UsuarioRepository usuarioRepository;
+
+    @Override
+    @Transactional
+    public MedidorResponseDTO create(@Valid MedidorDTO dto) {
+        Usuario usuario = usuarioRepository.findById(dto.usuarioId());
+        if (usuario == null)
+            throw new ValidationException("usuarioId", "Usuário não encontrado.");
+
+        Medidor medidor = new Medidor();
+        medidor.setNome(dto.nome());
+        medidor.setLocalizacao(dto.localizacao());
+        medidor.setUsuario(usuario);
+
+        medidorRepository.persist(medidor);
+        return MedidorResponseDTO.valueOf(medidor);
+    }
+
+    @Override
+    @Transactional
+    public void update(Long id, MedidorDTO dto) {
+        Medidor medidor = medidorRepository.findById(id);
+        
+        if (medidor == null)
+            throw new ValidationException("id", "Medidor não encontrado.");
+
+        Usuario usuario = usuarioRepository.findById(dto.usuarioId());
+        if (usuario == null)
+            throw new ValidationException("usuarioId", "Usuário não encontrado.");
+
+        medidor.setNome(dto.nome());
+        medidor.setLocalizacao(dto.localizacao());
+        medidor.setUsuario(usuario);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        medidorRepository.deleteById(id);
+    }
+
+    @Override
+    public MedidorResponseDTO findById(Long id) {
+        Medidor medidor = medidorRepository.findById(id);
+        if (medidor == null)
+            throw new ValidationException("id", "Medidor não encontrado.");
+        return MedidorResponseDTO.valueOf(medidor);
+    }
+
+    @Override
+    public List<MedidorResponseDTO> findAll() {
+        return medidorRepository.listAll()
+                .stream()
+                .map(MedidorResponseDTO::valueOf)
+                .toList();
+    }
+
+    @Override
+    public List<MedidorResponseDTO> findByUsuarioId(Long usuarioId) {
+        return medidorRepository.findByUsuarioId(usuarioId)
+                .stream()
+                .map(MedidorResponseDTO::valueOf)
+                .toList();
+    }
+
+    @Override
+    public List<MedidorResponseDTO> findByNome(String nome) {
+        return medidorRepository.findByNome(nome)
+                .stream()
+                .map(MedidorResponseDTO::valueOf)
+                .toList();
+    }
+}
