@@ -25,13 +25,16 @@ O sistema coleta dados de sensores físicos, envia ao backend desenvolvido em **
 src/
  ├── main/
  │   ├── java/br/unitins/topicos1/
- │   │    ├── controller/
- │   │    ├── service/
+ │   │    ├── dto/
+ │   │    ├── form/
+ │   │    ├── model/
  │   │    ├── repository/
- │   │    └── model/
+ │   │    ├── resource/
+ │   │    ├── service/
+ │   │    ├── util/
+ │   │    └── validation/
  │   └── resources/
- │        ├── application.properties
- │        └── META-INF/persistence.xml
+ │        └── application.properties
 ```
 
 ### 🔐 Autenticação
