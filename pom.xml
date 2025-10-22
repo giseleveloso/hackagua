@@ -97,7 +97,7 @@
 
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-websockets-next</artifactId>
+      <artifactId>quarkus-websockets</artifactId>
     </dependency>
 
     <dependency>
