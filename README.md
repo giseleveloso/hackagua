@@ -1,72 +1,230 @@
-# canecas-quarkus-tp1
+## 💧 Projeto: <NOME_DO_PROJETO>
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+### 🧩 Descrição geral
 
-If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
+O **Aqualy** é uma aplicação completa para monitoramento de **vazão e consumo de água** em tempo real.
+O sistema coleta dados de sensores físicos, envia ao backend desenvolvido em **Quarkus**, e exibe as informações para o usuário final em uma interface desenvolvida em **FlutterFlow**.
 
-## Running the application in dev mode
+---
 
-You can run your application in dev mode that enables live coding using:
-```shell script
-./mvnw compile quarkus:dev
+## 🚀 Tecnologias utilizadas
+
+**Backend:** Quarkus, Java, RESTEasy, Hibernate e PostgreSQL para homologação
+**Frontend:** FlutterFlow, Firebase 
+**Banco de dados:** MariaDB
+**Integração:** <ESP32 / Arduino / MQTT / HTTP>
+**Infraestrutura:** <Docker / Kubernetes / etc>
+
+---
+
+## ⚙️ Backend (API Quarkus)
+
+### 📁 Estrutura geral
+
+```
+src/
+ ├── main/
+ │   ├── java/br/unitins/topicos1/
+ │   │    ├── controller/
+ │   │    ├── service/
+ │   │    ├── repository/
+ │   │    └── model/
+ │   └── resources/
+ │        ├── application.properties
+ │        └── META-INF/persistence.xml
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at http://localhost:8080/q/dev/.
+### 🔐 Autenticação
 
-## Packaging and running the application
+* Tipo: JWT 
+* Endpoint de login: `POST /login`
+* Exemplo de resposta:
 
-The application can be packaged using:
-```shell script
-./mvnw package
-```
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
-
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-```shell script
-./mvnw package -Dquarkus.package.type=uber-jar
+```json
+{
+  "token": "<jwt_token>",
+  "expires_in": 3600
+}
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+---
 
-## Creating a native executable
+### 🌊 Endpoints principais
 
-You can create a native executable using: 
-```shell script
-./mvnw package -Dnative
+#### 🔹 **Sensores**
+
+`GET /medidores`
+Retorna a lista de sensores cadastrados.
+
+**Exemplo de resposta:**
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Sensor 1",
+    "location": "Pia da Cozinha",
+    "limite": 1000
+  }
+]
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using: 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+`POST /medidores`
+Cadastra um novo sensor.
+
+```json
+{
+  "name": "Sensor 2",
+  "location": "Maquina de lavar"
+}
 ```
 
-You can then execute your native executable with: `./target/hackagua-quarkus-tp1-1.0.0-SNAPSHOT-runner`
+---
 
-If you want to learn more about building native executables, please consult https://quarkus.io/guides/maven-tooling.
+#### 🔹 **Medições**
 
-## Related Guides
+`POST /leituras`
+Recebe dados de vazão enviados pelo sensor.
 
-- SmallRye OpenAPI ([guide](https://quarkus.io/guides/openapi-swaggerui)): Document your REST APIs with OpenAPI - comes with Swagger UI
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code for Hibernate ORM via the active record or the repository pattern
-- RESTEasy Classic ([guide](https://quarkus.io/guides/resteasy)): REST endpoint framework implementing Jakarta REST and more
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
+```json
+{
+  "sensorId": 1,
+  "vazao": 2.45,
+  "consumoTotal": 13.7
+}
+```
 
-## Provided Code
+`GET /leituras/{medidorId}`
+Retorna histórico de medições de um sensor.
 
-### Hibernate ORM
+---
 
-Create your first JPA entity
+#### 🔹 **Usuários**
 
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
+`POST /usuarios`
+Cria um novo usuário.
+`GET /usuarios/{id}`
+Retorna dados do usuário.
 
-[Related Hibernate with Panache section...](https://quarkus.io/guides/hibernate-orm-panache)
+---
 
+### 🗄️ Banco de dados
 
-### RESTEasy JAX-RS
+Entidades principais:
 
-Easily start your RESTful Web Services
+* `Medidor(id, nome, localizacao, limite)`
+* `Leitura(id, sensor_id, vazao, volume, timestamp)`
+* `Usuario(id, nome, email, senha, valorM)`
 
-[Related guide section...](https://quarkus.io/guides/getting-started#the-jax-rs-resources)
+---
+
+## 📱 Frontend (FlutterFlow)
+
+### 📋 Telas principais
+
+* **Login e cadastro**
+* **Home com dados gerais e de cada medidor** (mostra consumo e vazão em tempo real)
+* **Dashboard** (detalhamento avançado dos dados monitorados)
+* **Histórico de medições**
+* **Configuração de sensores**
+
+### 🔌 Integração com API
+
+* Método: REST API (GET/POST)
+* Base URL: `<https://api.seuprojeto.com>`
+* Autenticação: Bearer Token (JWT)
+
+**Exemplo de integração (FlutterFlow Action):**
+
+```dart
+POST /leituras
+Headers:
+  Authorization: Bearer <token>
+Body:
+  {
+    "sensorId": 1,
+    "vazao": 3.12,
+    "limite": 27.8
+  }
+```
+
+---
+
+## 🧠 Integração com os sensores físicos
+
+### ⚡ Hardware
+
+* Sensor: `<modelo ex: YF-S201>`
+* Controlador: `<ESP32 / Arduino>`
+* Comunicação: `<HTTP / MQTT / Serial>`
+* Frequência de envio: `<ex: a cada 5 segundos>`
+
+**Exemplo de payload enviado ao backend:**
+
+```json
+{
+  "sensorId": 1,
+  "flowRate": 1.86,
+  "volume": 12.5
+}
+```
+
+---
+
+## 🧩 Como executar o projeto
+
+### 🖥️ Backend
+
+```bash
+# Clonar o repositório
+git clone https://github.com/giseleveloso/hackagua.git
+
+# Executar em modo dev
+./mvnw quarkus:dev
+```
+
+**Variáveis de ambiente:**
+
+```
+DB_URL=jdbc:postgresql://localhost:5432/water
+DB_USER=admin
+DB_PASS=1234
+JWT_SECRET=seu_token_aqui
+```
+
+---
+
+### 📱 Frontend (FlutterFlow)
+
+1. Abrir o projeto no FlutterFlow.
+2. Atualizar a URL da API em **App Settings > API Configuration**.
+3. Publicar o app (web ou mobile).
+
+---
+
+## 🧪 Testes
+
+Para testar o envio de dados manualmente:
+
+```bash
+curl -X POST https://api.seuprojeto.com/measurements \
+  -H "Content-Type: application/json" \
+  -d '{"sensorId":1,"flowRate":2.8,"volume":14.2}'
+```
+
+---
+
+## 🧭 Roadmap
+
+* [ ] Integrar os sensores com o backend
+* [ ] Implementar alertas de vazamento
+* [ ] Criar dashboard em tempo real
+
+---
+
+## 👥 Autores
+
+* **Cauã Fernandes, Dejanildo Júnior, Gisele Veloso, João Víttor Costa e Thalyssa Freitas**
+* **UNITINS - HACKÁGUA**
+
+---
