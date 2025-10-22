@@ -12,8 +12,7 @@ O sistema coleta dados de sensores físicos, envia ao backend desenvolvido em **
 **Backend:** Quarkus, Java, RESTEasy, Hibernate e PostgreSQL para homologação
 **Frontend:** FlutterFlow, Firebase 
 **Banco de dados:** MariaDB
-**Integração:** <ESP32 / Arduino / MQTT / HTTP>
-**Infraestrutura:** <Docker / Kubernetes / etc>
+**Integração:** HTTP para integrar com o sensor
 
 ---
 
@@ -219,6 +218,9 @@ curl -X POST https://api.seuprojeto.com/measurements \
 
 ## 🧭 Roadmap
 
+* [x] Criar o backend funcional
+* [x] Integrar o frontend com o backend
+* [ ] Desenvolver a parte dos sensores isoladamente
 * [ ] Integrar os sensores com o backend
 * [ ] Implementar alertas de vazamento
 * [ ] Criar dashboard em tempo real
@@ -228,6 +230,7 @@ curl -X POST https://api.seuprojeto.com/measurements \
 ## 👥 Autores
 
 * **Cauã Fernandes, Dejanildo Júnior, Gisele Veloso, João Víttor Costa e Thalyssa Freitas**
-* **UNITINS - HACKÁGUA**
+## UNITINS - HACKÁGUA
+
 
 ---
