@@ -43,7 +43,7 @@ public class MedidorServiceImpl implements MedidorService {
     @Transactional
     public void update(Long id, MedidorDTO dto) {
         Medidor medidor = medidorRepository.findById(id);
-        
+
         if (medidor == null)
             throw new ValidationException("id", "Medidor não encontrado.");
 

@@ -4,8 +4,10 @@ import java.util.List;
 
 import br.unitins.topicos1.dto.UsuarioDTO;
 import br.unitins.topicos1.dto.UsuarioResponseDTO;
+import br.unitins.topicos1.model.TipoUso;
 import br.unitins.topicos1.model.Usuario;
 import br.unitins.topicos1.repository.UsuarioRepository;
+import br.unitins.topicos1.util.HashUtil;
 import br.unitins.topicos1.validation.ValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -26,7 +28,8 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setNome(dto.nome());
         usuario.setEmail(dto.email());
-        usuario.setSenha(dto.senha()); // TODO: Hash da senha
+        usuario.setSenha(HashUtil.hash(dto.senha()));
+        usuario.setTipoUso(TipoUso.valueOf(dto.tipoUso()));
 
         usuarioRepository.persist(usuario);
         return UsuarioResponseDTO.valueOf(usuario);
@@ -48,8 +51,10 @@ public class UsuarioServiceImpl implements UsuarioService {
         
         usuario.setNome(dto.nome());
         usuario.setEmail(dto.email());
+        usuario.setTipoUso(TipoUso.valueOf(dto.tipoUso()));
+        
         if (dto.senha() != null && !dto.senha().isEmpty()) {
-            usuario.setSenha(dto.senha()); // TODO: Hash da senha
+            usuario.setSenha(HashUtil.hash(dto.senha()));
         }
     }
 

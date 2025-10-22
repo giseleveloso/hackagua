@@ -22,7 +22,7 @@ import jakarta.ws.rs.core.Response.Status;
 @Consumes(MediaType.APPLICATION_JSON)
 @Path("/medidores")
 public class MedidorResource {
-    
+
     @Inject
     public MedidorService medidorService;
 
@@ -60,8 +60,8 @@ public class MedidorResource {
         LOG.infof("Criando novo medidor: %s", dto.nome());
         try {
             return Response.status(Status.CREATED)
-                          .entity(medidorService.create(dto))
-                          .build();
+                    .entity(medidorService.create(dto))
+                    .build();
         } catch (Exception e) {
             LOG.error("Erro ao criar medidor", e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
