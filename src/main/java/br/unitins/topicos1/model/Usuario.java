@@ -2,8 +2,6 @@ package br.unitins.topicos1.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 
 @Entity
 public class Usuario extends DefaultEntity {
@@ -14,9 +12,7 @@ public class Usuario extends DefaultEntity {
     
     private String senha;
     
-    @Enumerated(EnumType.ORDINAL)
-    @Column(name = "tipo_uso")
-    private TipoUso tipoUso;
+    private Double valorM;
 
     public String getNome() {
         return nome;
@@ -42,11 +38,12 @@ public class Usuario extends DefaultEntity {
         this.senha = senha;
     }
 
-    public TipoUso getTipoUso() {
-        return tipoUso;
+    public Double getValorM() {
+        return valorM;
     }
 
-    public void setTipoUso(TipoUso tipoUso) {
-        this.tipoUso = tipoUso;
+    public void setValorM(Double valorM) {
+        this.valorM = valorM;
     }
+
 }

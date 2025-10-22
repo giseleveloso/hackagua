@@ -26,7 +26,6 @@ public class JwtUtil {
                 .groups(roles)
                 .claim("id", usuario.id())
                 .claim("nome", usuario.nome())
-                .claim("tipoUso", usuario.tipoUso())
                 .issuedAt(now)
                 .expiresAt(expiryDate)
                 .sign();

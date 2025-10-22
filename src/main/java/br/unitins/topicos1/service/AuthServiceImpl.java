@@ -4,7 +4,6 @@ import br.unitins.topicos1.dto.LoginDTO;
 import br.unitins.topicos1.dto.LoginResponseDTO;
 import br.unitins.topicos1.dto.UsuarioDTO;
 import br.unitins.topicos1.dto.UsuarioResponseDTO;
-import br.unitins.topicos1.model.TipoUso;
 import br.unitins.topicos1.model.Usuario;
 import br.unitins.topicos1.repository.UsuarioRepository;
 import br.unitins.topicos1.util.HashUtil;
@@ -27,7 +26,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponseDTO login(@Valid LoginDTO dto) {
         Usuario usuario = usuarioRepository.findByEmailCompleto(dto.email());
-        
+
         if (usuario == null || !HashUtil.verificarHash(dto.senha(), usuario.getSenha())) {
             throw new ValidationException("login", "Email ou senha inválidos");
         }
@@ -50,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
         usuario.setNome(dto.nome());
         usuario.setEmail(dto.email());
         usuario.setSenha(HashUtil.hash(dto.senha()));
-        usuario.setTipoUso(TipoUso.valueOf(dto.tipoUso()));
+        usuario.setValorM(dto.valorM());
 
         usuarioRepository.persist(usuario);
         return UsuarioResponseDTO.valueOf(usuario);
