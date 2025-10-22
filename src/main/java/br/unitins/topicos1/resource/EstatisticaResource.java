@@ -3,6 +3,7 @@ package br.unitins.topicos1.resource;
 import org.jboss.logging.Logger;
 
 import br.unitins.topicos1.service.EstatisticaService;
+import br.unitins.topicos1.dto.UsuarioEstatisticaResponseDTO;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -27,5 +28,13 @@ public class EstatisticaResource {
     public Response calcularEstatisticas(@PathParam("medidorId") Long medidorId) {
         LOG.infof("Calculando estatísticas do medidor: %d", medidorId);
         return Response.ok(estatisticaService.calcularEstatisticas(medidorId)).build();
+    }
+
+    @GET
+    @Path("/usuario/{usuarioId}")
+    public Response calcularEstatisticasUsuario(@PathParam("usuarioId") Long usuarioId) {
+        LOG.infof("Calculando estatísticas do usuário: %d", usuarioId);
+        UsuarioEstatisticaResponseDTO dto = estatisticaService.calcularEstatisticasUsuario(usuarioId);
+        return Response.ok(dto).build();
     }
 }

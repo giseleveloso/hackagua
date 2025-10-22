@@ -51,3 +51,17 @@ INSERT INTO leitura (id, medidor_id, litros, litros_acumulado, data_hora) VALUES
 -- Medidor 7 (Carlos - Geral)
 (19, 7, 18.500, 18.50, '2025-10-01 00:00:00'),
 (20, 7, 22.300, 40.80, '2025-10-02 00:00:00');
+
+-- Medidores de Teste Tempo Real
+INSERT INTO medidor (id, nome, localizacao, limite, ligado, usuario_id) VALUES 
+(8, 'Medidor Teste Ligado', 'Laboratório', 15.0, true, 1),
+(9, 'Medidor Teste Desligado', 'Laboratório', 15.0, false, 1);
+
+-- Leituras de Teste Tempo Real
+-- Medidor 8: última leitura no momento do seed (teste ligado se chamado logo após subir)
+INSERT INTO leitura (id, medidor_id, litros, litros_acumulado, data_hora) VALUES 
+(21, 8, 1.500, 1.50, CURRENT_TIMESTAMP);
+
+-- Medidor 9: última leitura antiga (sempre desligado)
+INSERT INTO leitura (id, medidor_id, litros, litros_acumulado, data_hora) VALUES 
+(22, 9, 2.000, 2.00, '2025-09-01 10:00:00');

@@ -2,12 +2,15 @@ package br.unitins.topicos1.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import br.unitins.topicos1.dto.EstatisticaResponseDTO;
 import br.unitins.topicos1.dto.LeituraDTO;
 import br.unitins.topicos1.dto.LeituraResponseDTO;
+import br.unitins.topicos1.dto.TempoRealResponseDTO;
 import br.unitins.topicos1.model.Leitura;
 import br.unitins.topicos1.model.Medidor;
 import br.unitins.topicos1.repository.LeituraRepository;
@@ -100,5 +103,54 @@ public class LeituraServiceImpl implements LeituraService {
             vazaoMedia,
             leituras.size()
         );
+    }
+
+    @Override
+    public TempoRealResponseDTO obterTempoReal(Long medidorId) {
+        Medidor medidor = medidorRepository.findById(medidorId);
+        if (medidor == null)
+            throw new ValidationException("medidorId", "Medidor não encontrado");
+
+        Leitura ultima = leituraRepository.findUltimaLeitura(medidorId);
+        if (ultima == null) {
+            return new TempoRealResponseDTO(
+                medidorId,
+                medidor.getNome(),
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                null,
+                false
+            );
+        }
+
+        boolean recente = Duration.between(ultima.getDataHora(), LocalDateTime.now()).getSeconds() <= 10;
+        if (!recente) {
+            return new TempoRealResponseDTO(
+                medidorId,
+                medidor.getNome(),
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                ultima.getDataHora(),
+                false
+            );
+        }
+
+        BigDecimal vazao = ultima.getLitros().divide(BigDecimal.valueOf(10.0 / 60.0), 3, RoundingMode.HALF_UP);
+        return new TempoRealResponseDTO(
+            medidorId,
+            medidor.getNome(),
+            ultima.getLitros(),
+            vazao,
+            ultima.getDataHora(),
+            true
+        );
+    }
+
+    @Override
+    public List<TempoRealResponseDTO> obterTempoRealPorUsuario(Long usuarioId) {
+        List<Medidor> medidores = medidorRepository.findByUsuarioId(usuarioId);
+        return medidores.stream()
+            .map(m -> obterTempoReal(m.getId()))
+            .collect(Collectors.toList());
     }
 }

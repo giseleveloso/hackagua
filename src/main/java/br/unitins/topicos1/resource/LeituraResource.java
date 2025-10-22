@@ -72,4 +72,18 @@ public class LeituraResource {
         LocalDate inicioMes = hoje.withDayOfMonth(1);
         return Response.ok(leituraService.calcularEstatisticas(medidorId, inicioMes, hoje)).build();
     }
+
+    // Tempo real (polling)
+    @GET
+    @Path("/tempo-real/medidor/{medidorId}")
+    public Response tempoReal(@PathParam("medidorId") Long medidorId) {
+        return Response.ok(leituraService.obterTempoReal(medidorId)).build();
+    }
+
+    // Tempo real por usuário (todos os medidores do usuário)
+    @GET
+    @Path("/tempo-real/usuario/{usuarioId}")
+    public Response tempoRealPorUsuario(@PathParam("usuarioId") Long usuarioId) {
+        return Response.ok(leituraService.obterTempoRealPorUsuario(usuarioId)).build();
+    }
 }

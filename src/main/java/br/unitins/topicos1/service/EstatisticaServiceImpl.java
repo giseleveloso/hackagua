@@ -5,8 +5,10 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import br.unitins.topicos1.dto.EstatisticaResponseDTO;
+import br.unitins.topicos1.dto.UsuarioEstatisticaResponseDTO;
 import br.unitins.topicos1.model.Leitura;
 import br.unitins.topicos1.model.Medidor;
 import br.unitins.topicos1.repository.LeituraRepository;
@@ -104,5 +106,76 @@ public class EstatisticaServiceImpl implements EstatisticaService {
         }
 
         return somaLitros.divide(BigDecimal.valueOf(minutos), 2, RoundingMode.HALF_UP);
+    }
+
+    @Override
+    public UsuarioEstatisticaResponseDTO calcularEstatisticasUsuario(Long usuarioId) {
+        if (usuarioId == null) {
+            throw new ValidationException("usuarioId", "Usuário inválido.");
+        }
+
+        List<Medidor> medidores = medidorRepository.findByUsuarioId(usuarioId);
+        if (medidores.isEmpty()) {
+            return new UsuarioEstatisticaResponseDTO(
+                usuarioId,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO
+            );
+        }
+
+        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime inicioMes = agora.withDayOfMonth(1).toLocalDate().atStartOfDay();
+        LocalDateTime inicioMesAnterior = inicioMes.minusMonths(1);
+        LocalDateTime fimMesAnterior = inicioMes.minusSeconds(1);
+
+        BigDecimal litrosMesAtual = BigDecimal.ZERO;
+        BigDecimal litrosMesAnterior = BigDecimal.ZERO;
+        BigDecimal litrosAcumulado = BigDecimal.ZERO;
+        BigDecimal gastoMesAtual = BigDecimal.ZERO;
+
+        for (Medidor medidor : medidores) {
+            Long medidorId = medidor.getId();
+            if (medidorId == null) continue;
+
+            List<Leitura> leiturasMesAtual = leituraRepository.findByMedidorIdAndPeriodo(medidorId, inicioMes, agora);
+            List<Leitura> leiturasMesAnterior = leituraRepository.findByMedidorIdAndPeriodo(medidorId, inicioMesAnterior, fimMesAnterior);
+
+            BigDecimal somaAtual = calcularConsumoTotal(leiturasMesAtual);
+            BigDecimal somaAnterior = calcularConsumoTotal(leiturasMesAnterior);
+
+            litrosMesAtual = litrosMesAtual.add(somaAtual);
+            litrosMesAnterior = litrosMesAnterior.add(somaAnterior);
+
+            // acumulado total do medidor (usa última leitura, se houver)
+            Leitura ultima = leituraRepository.findUltimaLeitura(medidorId);
+            if (ultima != null && ultima.getLitrosAcumulado() != null) {
+                litrosAcumulado = litrosAcumulado.add(ultima.getLitrosAcumulado());
+            }
+
+            // custo do mês atual somando por medidor com valor do usuário associado ao medidor
+            BigDecimal valorM3 = (medidor.getUsuario() != null && medidor.getUsuario().getValorM() != null)
+                ? BigDecimal.valueOf(medidor.getUsuario().getValorM())
+                : BigDecimal.ZERO;
+            BigDecimal m3Atual = somaAtual.divide(BigDecimal.valueOf(1000), 3, RoundingMode.HALF_UP);
+            gastoMesAtual = gastoMesAtual.add(m3Atual.multiply(valorM3).setScale(2, RoundingMode.HALF_UP));
+        }
+
+        BigDecimal m3MesAnterior = litrosMesAnterior.divide(BigDecimal.valueOf(1000), 3, RoundingMode.HALF_UP);
+        BigDecimal economiaMes = BigDecimal.ZERO;
+        if (m3MesAnterior.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal valorM3Usuario = medidores.get(0).getUsuario() != null && medidores.get(0).getUsuario().getValorM() != null
+                ? BigDecimal.valueOf(medidores.get(0).getUsuario().getValorM())
+                : BigDecimal.ZERO;
+            BigDecimal gastoMesAnterior = m3MesAnterior.multiply(valorM3Usuario).setScale(2, RoundingMode.HALF_UP);
+            economiaMes = gastoMesAnterior.subtract(gastoMesAtual).setScale(2, RoundingMode.HALF_UP);
+        }
+
+        return new UsuarioEstatisticaResponseDTO(
+            usuarioId,
+            litrosAcumulado.setScale(2, RoundingMode.HALF_UP),
+            gastoMesAtual.setScale(2, RoundingMode.HALF_UP),
+            economiaMes
+        );
     }
 }
