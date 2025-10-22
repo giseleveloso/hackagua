@@ -1,4 +1,4 @@
-## 💧 Projeto: <NOME_DO_PROJETO>
+## 💧 Projeto: Aqualy
 
 ### 🧩 Descrição geral
 
