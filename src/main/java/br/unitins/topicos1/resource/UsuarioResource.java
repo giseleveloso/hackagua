@@ -22,7 +22,7 @@ import jakarta.ws.rs.core.Response.Status;
 @Consumes(MediaType.APPLICATION_JSON)
 @Path("/usuarios")
 public class UsuarioResource {
-    
+
     @Inject
     public UsuarioService usuarioService;
 
@@ -53,8 +53,8 @@ public class UsuarioResource {
         LOG.infof("Criando novo usuário: %s", dto.nome());
         try {
             return Response.status(Status.CREATED)
-                          .entity(usuarioService.create(dto))
-                          .build();
+                    .entity(usuarioService.create(dto))
+                    .build();
         } catch (Exception e) {
             LOG.error("Erro ao criar usuário", e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
@@ -65,8 +65,7 @@ public class UsuarioResource {
     @Path("/{id}")
     public Response update(@PathParam("id") Long id, @Valid UsuarioDTO dto) {
         LOG.infof("Atualizando usuário com id: %d", id);
-        usuarioService.update(id, dto);
-        return Response.status(Status.NO_CONTENT).build();
+        return Response.ok(usuarioService.update(id, dto)).build();
     }
 
     @DELETE

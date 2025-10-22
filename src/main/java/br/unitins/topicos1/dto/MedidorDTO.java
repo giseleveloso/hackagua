@@ -16,5 +16,7 @@ public record MedidorDTO(
     @NotNull(message = "O ID do usuário é obrigatório")
     Long usuarioId,
 
-    Double limite
+    Double limite,
+
+    boolean ligado
 ) {}

@@ -9,6 +9,7 @@ public class Medidor extends DefaultEntity {
     private String nome;
     private String localizacao;
     private Double limite;
+    private boolean ligado;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
@@ -44,5 +45,13 @@ public class Medidor extends DefaultEntity {
 
     public void setLimite(Double limite) {
         this.limite = limite;
+    }
+
+    public boolean getLigado() {
+        return ligado;
+    }
+
+    public void setLigado(boolean ligado) {
+        this.ligado = ligado;
     }
 }

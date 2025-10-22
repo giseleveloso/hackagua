@@ -35,6 +35,7 @@ public class MedidorServiceImpl implements MedidorService {
         medidor.setLocalizacao(dto.localizacao());
         medidor.setUsuario(usuario);
         medidor.setLimite(dto.limite());
+        medidor.setLigado(dto.ligado());
 
         medidorRepository.persist(medidor);
         return MedidorResponseDTO.valueOf(medidor);
@@ -56,6 +57,7 @@ public class MedidorServiceImpl implements MedidorService {
         medidor.setLocalizacao(dto.localizacao());
         medidor.setUsuario(usuario);
         medidor.setLimite(dto.limite());
+        medidor.setLigado(dto.ligado());
 
     }
 

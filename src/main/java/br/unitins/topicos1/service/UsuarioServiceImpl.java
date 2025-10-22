@@ -42,19 +42,21 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     @Transactional
-    public void update(Long id, UsuarioDTO dto) {
+    public UsuarioResponseDTO update(Long id, UsuarioDTO dto) {
         Usuario usuario = usuarioRepository.findById(id);
-        
+
         if (usuario == null)
             throw new ValidationException("id", "Usuário não encontrado.");
-        
+
         usuario.setNome(dto.nome());
         usuario.setEmail(dto.email());
         usuario.setValorM(dto.valorM());
-        
+
         if (dto.senha() != null && !dto.senha().isEmpty()) {
             usuario.setSenha(HashUtil.hash(dto.senha()));
         }
+        return UsuarioResponseDTO.valueOf(usuario);
+
     }
 
     @Override

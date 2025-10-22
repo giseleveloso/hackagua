@@ -8,7 +8,7 @@ import jakarta.validation.Valid;
 
 public interface UsuarioService {
     UsuarioResponseDTO create(@Valid UsuarioDTO dto);
-    void update(Long id, UsuarioDTO dto);
+    UsuarioResponseDTO update(Long id, UsuarioDTO dto);
     void delete(Long id);
     UsuarioResponseDTO findById(Long id);
     List<UsuarioResponseDTO> findAll();
