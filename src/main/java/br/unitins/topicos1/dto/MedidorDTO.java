@@ -14,5 +14,7 @@ public record MedidorDTO(
     String localizacao,
     
     @NotNull(message = "O ID do usuário é obrigatório")
-    Long usuarioId
+    Long usuarioId,
+
+    Double limite
 ) {}

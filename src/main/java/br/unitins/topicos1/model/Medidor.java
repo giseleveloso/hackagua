@@ -8,7 +8,8 @@ import jakarta.persistence.ManyToOne;
 public class Medidor extends DefaultEntity {
     private String nome;
     private String localizacao;
-    
+    private Double limite;
+
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
@@ -35,5 +36,13 @@ public class Medidor extends DefaultEntity {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
+    }
+
+    public Double getLimite() {
+        return limite;
+    }
+
+    public void setLimite(Double limite) {
+        this.limite = limite;
     }
 }
