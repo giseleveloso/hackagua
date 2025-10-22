@@ -9,11 +9,7 @@ public record LeituraDTO(
     @NotNull(message = "O ID do medidor é obrigatório")
     Long medidorId,
     
-    @NotNull(message = "A vazão é obrigatória")
-    @Positive(message = "A vazão deve ser positiva")
-    BigDecimal vazao,
-    
-    @NotNull(message = "O consumo total é obrigatório")
-    @Positive(message = "O consumo total deve ser positivo")
-    BigDecimal consumoTotal
+    @NotNull(message = "Litros consumidos é obrigatório")
+    @Positive(message = "Litros deve ser positivo")
+    BigDecimal litros
 ) {}

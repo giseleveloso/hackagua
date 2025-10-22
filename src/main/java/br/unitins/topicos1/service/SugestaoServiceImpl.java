@@ -97,10 +97,6 @@ public class SugestaoServiceImpl implements SugestaoService {
         
         List<String> sugestoes = new ArrayList<>();
 
-        if (stats.vazaoMedia().doubleValue() > 20) {
-            sugestoes.add("⚠️ Vazão média muito alta (" + stats.vazaoMedia() + " L/min) detectada no + Verifique possíveis vazamentos imediatamente!");
-        }
-
         return sugestoes;
     }
 }

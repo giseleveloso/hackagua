@@ -1,8 +1,11 @@
 package br.unitins.topicos1.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
+import br.unitins.topicos1.dto.EstatisticaResponseDTO;
 import br.unitins.topicos1.dto.LeituraDTO;
 import br.unitins.topicos1.dto.LeituraResponseDTO;
 import br.unitins.topicos1.model.Leitura;
@@ -19,22 +22,28 @@ import jakarta.validation.Valid;
 public class LeituraServiceImpl implements LeituraService {
 
     @Inject
-    public LeituraRepository leituraRepository;
+    LeituraRepository leituraRepository;
 
     @Inject
-    public MedidorRepository medidorRepository;
+    MedidorRepository medidorRepository;
 
     @Override
     @Transactional
-    public LeituraResponseDTO create(@Valid LeituraDTO dto) {
+    public LeituraResponseDTO registrarLeitura(@Valid LeituraDTO dto) {
         Medidor medidor = medidorRepository.findById(dto.medidorId());
         if (medidor == null)
-            throw new ValidationException("medidorId", "Medidor não encontrado.");
+            throw new ValidationException("medidorId", "Medidor não encontrado");
+
+        // Buscar última leitura para calcular acumulado
+        Leitura ultimaLeitura = leituraRepository.findUltimaLeitura(dto.medidorId());
+        BigDecimal litrosAcumulado = ultimaLeitura != null 
+            ? ultimaLeitura.getLitrosAcumulado().add(dto.litros())
+            : dto.litros();
 
         Leitura leitura = new Leitura();
         leitura.setMedidor(medidor);
-        leitura.setVazao(dto.vazao());
-        leitura.setConsumoTotal(dto.consumoTotal());
+        leitura.setLitros(dto.litros());
+        leitura.setLitrosAcumulado(litrosAcumulado);
         leitura.setDataHora(LocalDateTime.now());
 
         leituraRepository.persist(leitura);
@@ -42,34 +51,54 @@ public class LeituraServiceImpl implements LeituraService {
     }
 
     @Override
-    public LeituraResponseDTO findById(Long id) {
-        Leitura leitura = leituraRepository.findById(id);
-        if (leitura == null)
-            throw new ValidationException("id", "Leitura não encontrada.");
-        return LeituraResponseDTO.valueOf(leitura);
-    }
+    public EstatisticaResponseDTO calcularEstatisticas(Long medidorId, LocalDate dataInicio, LocalDate dataFim) {
+        Medidor medidor = medidorRepository.findById(medidorId);
+        if (medidor == null)
+            throw new ValidationException("medidorId", "Medidor não encontrado");
 
-    @Override
-    public List<LeituraResponseDTO> findByMedidorId(Long medidorId) {
-        return leituraRepository.findByMedidorId(medidorId)
-                .stream()
-                .map(LeituraResponseDTO::valueOf)
-                .toList();
-    }
+        LocalDateTime inicio = dataInicio.atStartOfDay();
+        LocalDateTime fim = dataFim.plusDays(1).atStartOfDay();
 
-    @Override
-    public List<LeituraResponseDTO> findByMedidorIdAndPeriodo(Long medidorId, LocalDateTime inicio, LocalDateTime fim) {
-        return leituraRepository.findByMedidorIdAndPeriodo(medidorId, inicio, fim)
-                .stream()
-                .map(LeituraResponseDTO::valueOf)
-                .toList();
-    }
+        List<Leitura> leituras = leituraRepository.findByMedidorIdAndPeriodo(medidorId, inicio, fim);
 
-    @Override
-    public List<LeituraResponseDTO> findLeiturasRecentes(Long medidorId, int limit) {
-        return leituraRepository.findLeiturasRecentes(medidorId, limit)
-                .stream()
-                .map(LeituraResponseDTO::valueOf)
-                .toList();
+        if (leituras.isEmpty()) {
+            return new EstatisticaResponseDTO(
+                medidorId, medidor.getNome(), dataInicio, dataFim,
+                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
+                BigDecimal.ZERO, 0
+            );
+        }
+
+        // Somar litros
+        BigDecimal totalLitros = leituras.stream()
+                .map(Leitura::getLitros)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Converter para m³
+        BigDecimal totalM3 = totalLitros.divide(BigDecimal.valueOf(1000), 3, RoundingMode.HALF_UP);
+
+        // Calcular vazão média (litros / (10 segundos / 60))
+        BigDecimal vazaoMedia = leituras.stream()
+                .map(l -> l.getLitros().divide(BigDecimal.valueOf(10.0 / 60.0), 3, RoundingMode.HALF_UP))
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(leituras.size()), 3, RoundingMode.HALF_UP);
+
+        // Calcular custo
+        BigDecimal valorM3 = medidor.getUsuario().getValorM() != null 
+            ? BigDecimal.valueOf(medidor.getUsuario().getValorM())
+            : BigDecimal.ZERO;
+        BigDecimal custoEstimado = totalM3.multiply(valorM3).setScale(2, RoundingMode.HALF_UP);
+
+        return new EstatisticaResponseDTO(
+            medidorId,
+            medidor.getNome(),
+            dataInicio,
+            dataFim,
+            totalLitros,
+            totalM3,
+            custoEstimado,
+            vazaoMedia,
+            leituras.size()
+        );
     }
 }

@@ -2,6 +2,7 @@ package br.unitins.topicos1.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,74 +14,95 @@ import br.unitins.topicos1.repository.MedidorRepository;
 import br.unitins.topicos1.validation.ValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 @ApplicationScoped
 public class EstatisticaServiceImpl implements EstatisticaService {
 
     @Inject
-    public LeituraRepository leituraRepository;
+    LeituraRepository leituraRepository;
 
     @Inject
-    public MedidorRepository medidorRepository;
+    MedidorRepository medidorRepository;
 
     @Override
+    @Transactional
     public EstatisticaResponseDTO calcularEstatisticas(Long medidorId) {
         Medidor medidor = medidorRepository.findById(medidorId);
-        if (medidor == null)
+        if (medidor == null) {
             throw new ValidationException("medidorId", "Medidor não encontrado.");
+        }
 
         LocalDateTime agora = LocalDateTime.now();
-        LocalDateTime inicioDia = agora.toLocalDate().atStartOfDay();
-        LocalDateTime inicioSemana = agora.minusDays(7);
         LocalDateTime inicioMes = agora.minusDays(30);
 
-        List<Leitura> leiturasDia = leituraRepository.findByMedidorIdAndPeriodo(medidorId, inicioDia, agora);
-        List<Leitura> leiturasSemana = leituraRepository.findByMedidorIdAndPeriodo(medidorId, inicioSemana, agora);
         List<Leitura> leiturasMes = leituraRepository.findByMedidorIdAndPeriodo(medidorId, inicioMes, agora);
 
-        BigDecimal consumoDiario = calcularConsumo(leiturasDia);
-        BigDecimal consumoSemanal = calcularConsumo(leiturasSemana);
-        BigDecimal consumoMensal = calcularConsumo(leiturasMes);
+        BigDecimal totalLitros = calcularConsumoTotal(leiturasMes);
+        BigDecimal totalM3 = totalLitros.divide(BigDecimal.valueOf(1000), 3, RoundingMode.HALF_UP);
+        BigDecimal custoEstimado = calcularCusto(totalM3, medidor);
         BigDecimal vazaoMedia = calcularVazaoMedia(leiturasMes);
-        BigDecimal vazaoMaxima = calcularVazaoMaxima(leiturasMes);
+
+        LocalDate dataInicio = inicioMes.toLocalDate();
+        LocalDate dataFim = agora.toLocalDate();
 
         return new EstatisticaResponseDTO(
-            medidorId,
-            medidor.getNome(),
-            consumoDiario,
-            consumoSemanal,
-            consumoMensal,
-            vazaoMedia,
-            vazaoMaxima,
-            leiturasMes.size()
-        );
+                medidorId,
+                medidor.getNome(),
+                dataInicio,
+                dataFim,
+                totalLitros,
+                totalM3,
+                custoEstimado,
+                vazaoMedia,
+                leiturasMes.size());
     }
 
-    private BigDecimal calcularConsumo(List<Leitura> leituras) {
-        if (leituras.isEmpty()) return BigDecimal.ZERO;
-        
-        BigDecimal primeiro = leituras.get(leituras.size() - 1).getConsumoTotal();
-        BigDecimal ultimo = leituras.get(0).getConsumoTotal();
-        
-        return ultimo.subtract(primeiro);
+    private BigDecimal calcularConsumoTotal(List<Leitura> leituras) {
+        if (leituras.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        // Soma todos os litros das leituras
+        return leituras.stream()
+                .map(Leitura::getLitros)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal calcularCusto(BigDecimal totalM3, Medidor medidor) {
+        if (medidor.getUsuario() == null || medidor.getUsuario().getValorM() == null) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal valorPorM3 = BigDecimal.valueOf(medidor.getUsuario().getValorM());
+        return totalM3.multiply(valorPorM3).setScale(2, RoundingMode.HALF_UP);
     }
 
     private BigDecimal calcularVazaoMedia(List<Leitura> leituras) {
-        if (leituras.isEmpty()) return BigDecimal.ZERO;
-        
-        BigDecimal soma = leituras.stream()
-                .map(Leitura::getVazao)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        return soma.divide(BigDecimal.valueOf(leituras.size()), 2, RoundingMode.HALF_UP);
-    }
+        if (leituras.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
 
-    private BigDecimal calcularVazaoMaxima(List<Leitura> leituras) {
-        if (leituras.isEmpty()) return BigDecimal.ZERO;
-        
-        return leituras.stream()
-                .map(Leitura::getVazao)
-                .max(BigDecimal::compareTo)
-                .orElse(BigDecimal.ZERO);
+        // Calcula a vazão média em litros por minuto
+        // Assumindo que cada leitura tem um intervalo de tempo
+        BigDecimal somaLitros = leituras.stream()
+                .map(Leitura::getLitros)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Calcula o tempo total em minutos entre primeira e última leitura
+        if (leituras.size() < 2) {
+            return BigDecimal.ZERO;
+        }
+
+        LocalDateTime primeiraData = leituras.get(0).getDataHora();
+        LocalDateTime ultimaData = leituras.get(leituras.size() - 1).getDataHora();
+
+        long minutos = java.time.Duration.between(primeiraData, ultimaData).toMinutes();
+
+        if (minutos == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        return somaLitros.divide(BigDecimal.valueOf(minutos), 2, RoundingMode.HALF_UP);
     }
 }

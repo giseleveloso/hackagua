@@ -10,17 +10,18 @@ import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Leitura extends DefaultEntity {
+    
     @ManyToOne
     @JoinColumn(name = "medidor_id")
     private Medidor medidor;
     
-    @Column(precision = 10, scale = 2)
-    private BigDecimal vazao;
+    @Column(precision = 10, scale = 3, nullable = false)
+    private BigDecimal litros;
     
-    @Column(name = "consumo_total", precision = 10, scale = 2)
-    private BigDecimal consumoTotal;
+    @Column(name = "litros_acumulado", precision = 12, scale = 2, nullable = false)
+    private BigDecimal litrosAcumulado; 
     
-    @Column(name = "data_hora")
+    @Column(name = "data_hora", nullable = false)
     private LocalDateTime dataHora;
 
     public Medidor getMedidor() {
@@ -31,20 +32,20 @@ public class Leitura extends DefaultEntity {
         this.medidor = medidor;
     }
 
-    public BigDecimal getVazao() {
-        return vazao;
+    public BigDecimal getLitros() {
+        return litros;
     }
 
-    public void setVazao(BigDecimal vazao) {
-        this.vazao = vazao;
+    public void setLitros(BigDecimal litros) {
+        this.litros = litros;
     }
 
-    public BigDecimal getConsumoTotal() {
-        return consumoTotal;
+    public BigDecimal getLitrosAcumulado() {
+        return litrosAcumulado;
     }
 
-    public void setConsumoTotal(BigDecimal consumoTotal) {
-        this.consumoTotal = consumoTotal;
+    public void setLitrosAcumulado(BigDecimal litrosAcumulado) {
+        this.litrosAcumulado = litrosAcumulado;
     }
 
     public LocalDateTime getDataHora() {
