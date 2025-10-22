@@ -133,7 +133,7 @@ Entidades principais:
 ### 🔌 Integração com API
 
 * Método: REST API (GET/POST)
-* Base URL: `<https://api.seuprojeto.com>`
+* Base URL: `<https://aqualy.com>`
 * Autenticação: Bearer Token (JWT)
 
 **Exemplo de integração (FlutterFlow Action):**
@@ -156,8 +156,8 @@ Body:
 
 ### ⚡ Hardware
 
-* Sensor: `<modelo ex: YF-S201>`
-* Controlador: `<ESP32 / Arduino>`
+* Sensor: `Sensor de vazão - modelo YF-S201`
+* Controlador: `ESP32`
 * Comunicação: `<HTTP / MQTT / Serial>`
 * Frequência de envio: `<ex: a cada 5 segundos>`
 
