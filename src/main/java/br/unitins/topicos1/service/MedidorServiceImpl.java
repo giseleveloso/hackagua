@@ -9,6 +9,7 @@ import br.unitins.topicos1.model.Usuario;
 import br.unitins.topicos1.repository.MedidorRepository;
 import br.unitins.topicos1.repository.UsuarioRepository;
 import br.unitins.topicos1.validation.ValidationException;
+import br.unitins.topicos1.resource.ws.SensorSocket;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -22,6 +23,9 @@ public class MedidorServiceImpl implements MedidorService {
 
     @Inject
     public UsuarioRepository usuarioRepository;
+
+    @Inject
+    public SensorSocket sensorSocket;
 
     @Override
     @Transactional
@@ -97,5 +101,49 @@ public class MedidorServiceImpl implements MedidorService {
                 .stream()
                 .map(MedidorResponseDTO::valueOf)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public MedidorResponseDTO setPower(Long id, boolean ligado) {
+        Medidor medidor = medidorRepository.findById(id);
+        if (medidor == null)
+            throw new ValidationException("id", "Medidor não encontrado.");
+
+        String uuid = String.valueOf(id);
+        try {
+            boolean sucesso = sensorSocket.powerUpdate(ligado, uuid);
+            if (sucesso) {
+                medidor.setLigado(ligado);
+            } else {
+                throw new Exception("Não foi possível desligar o medidor");
+            }
+        } catch (Exception e) {
+            // apenas logar; manter estado no banco
+        }
+        return MedidorResponseDTO.valueOf(medidor);
+    }
+
+    @Override
+    @Transactional
+    public MedidorResponseDTO togglePower(Long id) {
+        Medidor medidor = medidorRepository.findById(id);
+        if (medidor == null)
+            throw new ValidationException("id", "Medidor não encontrado.");
+
+        boolean novoEstado = !medidor.getLigado();
+
+        String uuid = String.valueOf(id);
+        try {
+            boolean sucesso = sensorSocket.powerUpdate(novoEstado, uuid);
+            if (sucesso) {
+                medidor.setLigado(novoEstado);
+            } else {
+                throw new Exception("Não foi possível desligar o medidor");
+            }
+        } catch (Exception e) {
+            // apenas logar; manter estado no banco
+        }
+        return MedidorResponseDTO.valueOf(medidor);
     }
 }

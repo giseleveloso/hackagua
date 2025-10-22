@@ -14,4 +14,6 @@ public interface MedidorService {
     List<MedidorResponseDTO> findAll();
     List<MedidorResponseDTO> findByUsuarioId(Long usuarioId);
     List<MedidorResponseDTO> findByNome(String nome);
+    MedidorResponseDTO setPower(Long id, boolean ligado);
+    MedidorResponseDTO togglePower(Long id);
 }

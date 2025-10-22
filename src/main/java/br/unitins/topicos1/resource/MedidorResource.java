@@ -11,6 +11,7 @@ import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -82,5 +83,19 @@ public class MedidorResource {
         LOG.infof("Deletando medidor com id: %d", id);
         medidorService.delete(id);
         return Response.status(Status.NO_CONTENT).build();
+    }
+
+    @PUT
+    @Path("/{id}/power")
+    public Response setPower(@PathParam("id") Long id, @QueryParam("ligado") boolean ligado) {
+        LOG.infof("Atualizando power do medidor %d para: %s", id, ligado);
+        return Response.ok(medidorService.setPower(id, ligado)).build();
+    }
+
+    @PUT
+    @Path("/{id}/power/toggle")
+    public Response togglePower(@PathParam("id") Long id) {
+        LOG.infof("Alternando power do medidor %d", id);
+        return Response.ok(medidorService.togglePower(id)).build();
     }
 }

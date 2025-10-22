@@ -14,7 +14,7 @@ import jakarta.websocket.Session;
 
 @ServerEndpoint("/ws/sensor/{uuid}")
 @ApplicationScoped
-public class ChatSocket {
+public class SensorSocket {
 
     Map<String, Session> sessions = new ConcurrentHashMap<>();
 
@@ -43,7 +43,7 @@ public class ChatSocket {
 
     private void broadcast(String message) {
         sessions.values().forEach(s -> {
-            s.getAsyncRemote().sendObject(message, result -> {
+            s.getAsyncRemote().sendText(message, result -> {
                 if (result.getException() != null) {
                     System.out.println("Unable to send message: " + result.getException());
                 }
@@ -51,14 +51,19 @@ public class ChatSocket {
         });
     }
 
-    public void powerUpdate(boolean power, String uuid) {
+    public boolean powerUpdate(boolean power, String uuid) {
         Session session = sessions.get(uuid);
-        if (session != null) {
-            session.getAsyncRemote().sendObject(power ? "ON" : "OFF", result -> {
+        if (session == null || !session.isOpen())
+            return false;
+        try {
+            session.getAsyncRemote().sendText(power ? "ON" : "OFF", result -> {
                 if (result.getException() != null) {
                     System.out.println("Unable to send message: " + result.getException()); // TODO: log
                 }
             });
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 }
