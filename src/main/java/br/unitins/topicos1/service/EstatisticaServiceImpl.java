@@ -64,7 +64,6 @@ public class EstatisticaServiceImpl implements EstatisticaService {
             return BigDecimal.ZERO;
         }
 
-        // Soma todos os litros das leituras
         return leituras.stream()
                 .map(Leitura::getLitros)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -84,13 +83,10 @@ public class EstatisticaServiceImpl implements EstatisticaService {
             return BigDecimal.ZERO;
         }
 
-        // Calcula a vazão média em litros por minuto
-        // Assumindo que cada leitura tem um intervalo de tempo
         BigDecimal somaLitros = leituras.stream()
                 .map(Leitura::getLitros)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Calcula o tempo total em minutos entre primeira e última leitura
         if (leituras.size() < 2) {
             return BigDecimal.ZERO;
         }
@@ -116,11 +112,10 @@ public class EstatisticaServiceImpl implements EstatisticaService {
         List<Medidor> medidores = medidorRepository.findByUsuarioId(usuarioId);
         if (medidores.isEmpty()) {
             return new UsuarioEstatisticaResponseDTO(
-                usuarioId,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO
-            );
+                    usuarioId,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO);
         }
 
         LocalDateTime agora = LocalDateTime.now();
@@ -135,10 +130,12 @@ public class EstatisticaServiceImpl implements EstatisticaService {
 
         for (Medidor medidor : medidores) {
             Long medidorId = medidor.getId();
-            if (medidorId == null) continue;
+            if (medidorId == null)
+                continue;
 
             List<Leitura> leiturasMesAtual = leituraRepository.findByMedidorIdAndPeriodo(medidorId, inicioMes, agora);
-            List<Leitura> leiturasMesAnterior = leituraRepository.findByMedidorIdAndPeriodo(medidorId, inicioMesAnterior, fimMesAnterior);
+            List<Leitura> leiturasMesAnterior = leituraRepository.findByMedidorIdAndPeriodo(medidorId,
+                    inicioMesAnterior, fimMesAnterior);
 
             BigDecimal somaAtual = calcularConsumoTotal(leiturasMesAtual);
             BigDecimal somaAnterior = calcularConsumoTotal(leiturasMesAnterior);
@@ -146,16 +143,14 @@ public class EstatisticaServiceImpl implements EstatisticaService {
             litrosMesAtual = litrosMesAtual.add(somaAtual);
             litrosMesAnterior = litrosMesAnterior.add(somaAnterior);
 
-            // acumulado total do medidor (usa última leitura, se houver)
             Leitura ultima = leituraRepository.findUltimaLeitura(medidorId);
             if (ultima != null && ultima.getLitrosAcumulado() != null) {
                 litrosAcumulado = litrosAcumulado.add(ultima.getLitrosAcumulado());
             }
 
-            // custo do mês atual somando por medidor com valor do usuário associado ao medidor
             BigDecimal valorM3 = (medidor.getUsuario() != null && medidor.getUsuario().getValorM() != null)
-                ? BigDecimal.valueOf(medidor.getUsuario().getValorM())
-                : BigDecimal.ZERO;
+                    ? BigDecimal.valueOf(medidor.getUsuario().getValorM())
+                    : BigDecimal.ZERO;
             BigDecimal m3Atual = somaAtual.divide(BigDecimal.valueOf(1000), 3, RoundingMode.HALF_UP);
             gastoMesAtual = gastoMesAtual.add(m3Atual.multiply(valorM3).setScale(2, RoundingMode.HALF_UP));
         }
@@ -163,18 +158,18 @@ public class EstatisticaServiceImpl implements EstatisticaService {
         BigDecimal m3MesAnterior = litrosMesAnterior.divide(BigDecimal.valueOf(1000), 3, RoundingMode.HALF_UP);
         BigDecimal economiaMes = BigDecimal.ZERO;
         if (m3MesAnterior.compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal valorM3Usuario = medidores.get(0).getUsuario() != null && medidores.get(0).getUsuario().getValorM() != null
-                ? BigDecimal.valueOf(medidores.get(0).getUsuario().getValorM())
-                : BigDecimal.ZERO;
+            BigDecimal valorM3Usuario = medidores.get(0).getUsuario() != null
+                    && medidores.get(0).getUsuario().getValorM() != null
+                            ? BigDecimal.valueOf(medidores.get(0).getUsuario().getValorM())
+                            : BigDecimal.ZERO;
             BigDecimal gastoMesAnterior = m3MesAnterior.multiply(valorM3Usuario).setScale(2, RoundingMode.HALF_UP);
             economiaMes = gastoMesAnterior.subtract(gastoMesAtual).setScale(2, RoundingMode.HALF_UP);
         }
 
         return new UsuarioEstatisticaResponseDTO(
-            usuarioId,
-            litrosAcumulado.setScale(2, RoundingMode.HALF_UP),
-            gastoMesAtual.setScale(2, RoundingMode.HALF_UP),
-            economiaMes
-        );
+                usuarioId,
+                litrosAcumulado.setScale(2, RoundingMode.HALF_UP),
+                gastoMesAtual.setScale(2, RoundingMode.HALF_UP),
+                economiaMes);
     }
 }

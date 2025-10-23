@@ -40,7 +40,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public UsuarioResponseDTO registro(@Valid UsuarioDTO dto) {
-        // Verificar se email já existe
         if (usuarioRepository.findByEmailCompleto(dto.email()) != null) {
             throw new ValidationException("email", "Email já cadastrado");
         }

@@ -37,17 +37,16 @@ public class LeituraServiceImpl implements LeituraService {
         if (medidor == null)
             throw new ValidationException("medidorId", "Medidor não encontrado");
 
-        // Buscar última leitura para calcular acumulado
         Leitura ultimaLeitura = leituraRepository.findUltimaLeitura(dto.medidorId());
-        BigDecimal litrosAcumulado = ultimaLeitura != null 
-            ? ultimaLeitura.getLitrosAcumulado().add(dto.litros())
-            : dto.litros();
+        BigDecimal litrosAcumulado = ultimaLeitura != null
+                ? ultimaLeitura.getLitrosAcumulado().add(dto.litros())
+                : dto.litros();
 
         Leitura leitura = new Leitura();
         leitura.setMedidor(medidor);
         leitura.setLitros(dto.litros());
         leitura.setLitrosAcumulado(litrosAcumulado);
-        // Se vazão veio do Arduino, persiste; senão calcula com base em 10s
+
         if (dto.vazaoLMin() != null) {
             leitura.setVazaoLMin(dto.vazaoLMin());
         } else {
@@ -72,43 +71,37 @@ public class LeituraServiceImpl implements LeituraService {
 
         if (leituras.isEmpty()) {
             return new EstatisticaResponseDTO(
-                medidorId, medidor.getNome(), dataInicio, dataFim,
-                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
-                BigDecimal.ZERO, 0
-            );
+                    medidorId, medidor.getNome(), dataInicio, dataFim,
+                    BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
+                    BigDecimal.ZERO, 0);
         }
 
-        // Somar litros
         BigDecimal totalLitros = leituras.stream()
                 .map(Leitura::getLitros)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Converter para m³
         BigDecimal totalM3 = totalLitros.divide(BigDecimal.valueOf(1000), 3, RoundingMode.HALF_UP);
 
-        // Calcular vazão média (litros / (10 segundos / 60))
         BigDecimal vazaoMedia = leituras.stream()
                 .map(l -> l.getLitros().divide(BigDecimal.valueOf(10.0 / 60.0), 3, RoundingMode.HALF_UP))
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .divide(BigDecimal.valueOf(leituras.size()), 3, RoundingMode.HALF_UP);
 
-        // Calcular custo
-        BigDecimal valorM3 = medidor.getUsuario().getValorM() != null 
-            ? BigDecimal.valueOf(medidor.getUsuario().getValorM())
-            : BigDecimal.ZERO;
+        BigDecimal valorM3 = medidor.getUsuario().getValorM() != null
+                ? BigDecimal.valueOf(medidor.getUsuario().getValorM())
+                : BigDecimal.ZERO;
         BigDecimal custoEstimado = totalM3.multiply(valorM3).setScale(2, RoundingMode.HALF_UP);
 
         return new EstatisticaResponseDTO(
-            medidorId,
-            medidor.getNome(),
-            dataInicio,
-            dataFim,
-            totalLitros,
-            totalM3,
-            custoEstimado,
-            vazaoMedia,
-            leituras.size()
-        );
+                medidorId,
+                medidor.getNome(),
+                dataInicio,
+                dataFim,
+                totalLitros,
+                totalM3,
+                custoEstimado,
+                vazaoMedia,
+                leituras.size());
     }
 
     @Override
@@ -120,45 +113,42 @@ public class LeituraServiceImpl implements LeituraService {
         Leitura ultima = leituraRepository.findUltimaLeitura(medidorId);
         if (ultima == null) {
             return new TempoRealResponseDTO(
-                medidorId,
-                medidor.getNome(),
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                null,
-                false
-            );
+                    medidorId,
+                    medidor.getNome(),
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    null,
+                    false);
         }
 
         boolean recente = Duration.between(ultima.getDataHora(), LocalDateTime.now()).getSeconds() <= 10;
         if (!recente) {
             return new TempoRealResponseDTO(
-                medidorId,
-                medidor.getNome(),
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                ultima.getDataHora(),
-                false
-            );
+                    medidorId,
+                    medidor.getNome(),
+                    BigDecimal.ZERO,
+                    BigDecimal.ZERO,
+                    ultima.getDataHora(),
+                    false);
         }
 
         BigDecimal vazao = ultima.getVazaoLMin() != null
-            ? ultima.getVazaoLMin()
-            : ultima.getLitros().divide(BigDecimal.valueOf(10.0 / 60.0), 3, RoundingMode.HALF_UP);
+                ? ultima.getVazaoLMin()
+                : ultima.getLitros().divide(BigDecimal.valueOf(10.0 / 60.0), 3, RoundingMode.HALF_UP);
         return new TempoRealResponseDTO(
-            medidorId,
-            medidor.getNome(),
-            ultima.getLitros(),
-            vazao,
-            ultima.getDataHora(),
-            true
-        );
+                medidorId,
+                medidor.getNome(),
+                ultima.getLitros(),
+                vazao,
+                ultima.getDataHora(),
+                true);
     }
 
     @Override
     public List<TempoRealResponseDTO> obterTempoRealPorUsuario(Long usuarioId) {
         List<Medidor> medidores = medidorRepository.findByUsuarioId(usuarioId);
         return medidores.stream()
-            .map(m -> obterTempoReal(m.getId()))
-            .collect(Collectors.toList());
+                .map(m -> obterTempoReal(m.getId()))
+                .collect(Collectors.toList());
     }
 }

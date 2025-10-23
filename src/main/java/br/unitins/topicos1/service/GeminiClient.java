@@ -21,7 +21,8 @@ public class GeminiClient {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public String generateJson(String apiKey, String systemPrompt, String userJson) throws IOException {
-        String urlStr = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey;
+        String urlStr = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="
+                + apiKey;
         String requestBody = buildBody(systemPrompt, userJson);
 
         int attempts = 0;
@@ -44,14 +45,18 @@ public class GeminiClient {
 
                 int status = con.getResponseCode();
                 if (status == 429) {
-                    try { Thread.sleep(800L * attempts); } catch (InterruptedException ignored) {}
+                    try {
+                        Thread.sleep(800L * attempts);
+                    } catch (InterruptedException ignored) {
+                    }
                     continue;
                 }
                 if (status != 200) {
                     reader = new BufferedReader(new InputStreamReader(con.getErrorStream(), StandardCharsets.UTF_8));
                     StringBuilder err = new StringBuilder();
                     String line;
-                    while ((line = reader.readLine()) != null) err.append(line);
+                    while ((line = reader.readLine()) != null)
+                        err.append(line);
                     LOG.errorf("Gemini HTTP %d: %s", status, err.toString());
                     throw new IOException("Gemini HTTP " + status);
                 }
@@ -59,13 +64,15 @@ public class GeminiClient {
                 reader = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
                 StringBuilder sb = new StringBuilder();
                 String line;
-                while ((line = reader.readLine()) != null) sb.append(line).append('\n');
+                while ((line = reader.readLine()) != null)
+                    sb.append(line).append('\n');
                 String jsonResponse = sb.toString().trim();
                 return extractPrettyJsonFromCandidates(jsonResponse);
             } catch (IOException e) {
                 last = e;
             } finally {
-                if (con != null) con.disconnect();
+                if (con != null)
+                    con.disconnect();
             }
         }
         throw last != null ? last : new IOException("Falha ao chamar Gemini");
@@ -86,24 +93,23 @@ public class GeminiClient {
             JsonNode root = MAPPER.readTree(jsonResponse);
             JsonNode textNode = root.path("candidates").path(0).path("content").path("parts").path(0).path("text");
             if (textNode.isMissingNode() || textNode.isNull()) {
-                return jsonResponse; // fallback bruto
+                return jsonResponse;
             }
             String inner = textNode.asText();
+
             // Algumas respostas vêm com markdown code fences, remover se existir
             inner = inner.strip();
             if (inner.startsWith("```)")) {
                 int first = inner.indexOf('\n');
                 int last = inner.lastIndexOf("```\n");
-                if (first >= 0 && last > first) inner = inner.substring(first + 1, last);
+                if (first >= 0 && last > first)
+                    inner = inner.substring(first + 1, last);
             }
-            // Pretty print do JSON interno
+
             JsonNode innerJson = MAPPER.readTree(inner);
             return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(innerJson);
         } catch (Exception e) {
-            // Se falhar para extrair/formatar, retorna original
             return jsonResponse;
         }
     }
 }
-
-

@@ -63,7 +63,7 @@ public class SensorSocket {
             }
 
             switch (parts[0]) {
-                case "01" -> { // Sensor data: 01;{medidorId};{consumoLitros};{vazaoLMin}
+                case "01" -> {
                     if (parts.length >= 4) {
                         leituraService.registrarLeitura(new LeituraDTO(
                             Long.parseLong(parts[1]), 
@@ -75,7 +75,7 @@ public class SensorSocket {
                         LOG.warnf("Mensagem tipo 01 com formato inválido: %s", message);
                     }
                 }
-                case "02" -> { // Status change: 02;{medidorId};{ON/OFF}
+                case "02" -> {
                     if (parts.length >= 3) {
                         boolean ligado = "ON".equalsIgnoreCase(parts[2]);
                         medidorService.updatePowerStatus(Long.parseLong(parts[1]), ligado);

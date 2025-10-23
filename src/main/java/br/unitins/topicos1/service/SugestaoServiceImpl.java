@@ -52,10 +52,8 @@ public class SugestaoServiceImpl implements SugestaoService {
         if (usuarioId == null)
             throw new ValidationException("usuarioId", "Usuário do medidor não encontrado.");
 
-        // Usa estatística mensal padrão (outra opção: aceitar período customizado)
         var stats = estatisticaService.calcularEstatisticas(medidorId);
 
-        // Monta entrada JSON
         String entrada = "{"
                 + "\"cenario\":\"" + (medidor.getLocalizacao() != null ? medidor.getLocalizacao() : medidor.getNome())
                 + "\","
@@ -87,8 +85,6 @@ public class SugestaoServiceImpl implements SugestaoService {
             String response = geminiClient.generateJson(apiKey, systemPrompt, entrada);
             Usuario usuario = usuarioRepository.findById(usuarioId);
 
-            // Normaliza formato: mantém apenas campos necessários em cada item e mapeia
-            // para entidade
             SugestaoIa entidade = parseSugestaoIa(response, usuario, medidor);
             sugestaoIaRepository.persist(entidade);
 
@@ -117,8 +113,6 @@ public class SugestaoServiceImpl implements SugestaoService {
     private SugestaoIa parseSugestaoIa(String json, Usuario usuario, Medidor medidor) {
         try {
             JsonNode root = MAPPER.readTree(json);
-            // Se vier envelope "candidates" (falha no pretty extraction), tenta extrair
-            // texto
             if (root.has("candidates")) {
                 JsonNode textNode = root.path("candidates").path(0).path("content").path("parts").path(0).path("text");
                 if (!textNode.isMissingNode()) {
@@ -136,7 +130,6 @@ public class SugestaoServiceImpl implements SugestaoService {
             }
             s.setObservacoes(observ);
 
-            // itens: pode vir em "sugestoes" ou "sugestoesEconomia"
             JsonNode arr = root.has("sugestoes") ? root.get("sugestoes") : root.get("sugestoesEconomia");
             if (arr != null && arr.isArray() && arr.size() > 0) {
                 for (JsonNode n : arr) {
