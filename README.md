@@ -38,87 +38,85 @@ src/
 
 ### 🔐 Autenticação
 
-* Tipo: JWT 
-* Endpoint de login: `POST /login`
-* Exemplo de resposta:
+- Tipo: JWT
+- Endpoints:
+  - `POST /auth/login`
+  - `POST /auth/registro`
+- Exemplo de resposta (login):
 
 ```json
 {
   "token": "<jwt_token>",
-  "Usuario": <Usuario>
+  "usuario": { /* UsuarioResponseDTO */ }
 }
 ```
+
+---
+
+### 🧱 Arquitetura (camadas)
+
+- `resource/` (REST & WS): recebe requisições HTTP/WebSocket e delega para serviços.
+  - REST: `AuthResource`, `UsuarioResource`, `MedidorResource`, `LeituraResource`, `SugestaoResource`
+  - WebSocket: `resource/ws/SensorSocket` (canal com os medidores)
+- `service/`: regras de negócio (ex.: `LeituraServiceImpl`, `EstatisticaServiceImpl`, `SugestaoServiceImpl`)
+- `repository/`: acesso a dados com Panache (ex.: `LeituraRepository`, `MedidorRepository`, `UsuarioRepository`)
+- `model/`: entidades JPA (ex.: `Usuario`, `Medidor`, `Leitura`)
+- `dto/`: contratos de entrada/saída (ex.: `MedidorDTO`, `MedidorResponseDTO`, `TempoRealResponseDTO`)
+- `util/` e `validation/`: utilitários e validações
 
 ---
 
 ### 🌊 Endpoints principais
 
-#### 🔹 **Sensores**
+#### 🔹 Autenticação
+- `POST /auth/login` — autentica e retorna JWT
+- `POST /auth/registro` — cria usuário e retorna `UsuarioResponseDTO`
 
-`GET /medidores`
-Retorna a lista de sensores cadastrados.
+#### 🔹 Usuários
+- `GET /usuarios` — lista usuários
+- `GET /usuarios/{id}` — detalhe do usuário
+- `PUT /usuarios/{id}` — atualiza e retorna `UsuarioResponseDTO`
 
-**Exemplo de resposta:**
+#### 🔹 Medidores
+- `GET /medidores` — lista medidores
+- `GET /medidores/{id}` — detalhe do medidor
+- `GET /medidores/usuario/{usuarioId}` — por usuário
+- `PUT /medidores/{id}/power?ligado=true|false` — atualiza estado e retorna `MedidorResponseDTO`
+- `PUT /medidores/{id}/power/toggle` — alterna estado e retorna `MedidorResponseDTO`
 
-```json
-[
-  {
-    "id": 1,
-    "name": "Sensor 1",
-    "location": "Pia da Cozinha",
-    "limite": 1000
-  }
-]
-```
+#### 🔹 Leituras, Estatísticas e Tempo real
+- `GET /leituras/estatisticas/medidor/{medidorId}?dataInicio&dataFim`
+- `GET /leituras/estatisticas/medidor/{medidorId}/hoje`
+- `GET /leituras/estatisticas/medidor/{medidorId}/semana`
+- `GET /leituras/estatisticas/medidor/{medidorId}/mes`
+- `GET /leituras/tempo-real/medidor/{medidorId}` — `TempoRealResponseDTO`
+- `GET /leituras/tempo-real/usuario/{usuarioId}` — lista de `TempoRealResponseDTO`
 
-`POST /medidores`
-Cadastra um novo sensor.
+Observação: as leituras em tempo real são recebidas via WebSocket (ver abaixo) e persistidas pelo backend.
 
-```json
-{
-  "name": "Sensor 2",
-  "location": "Maquina de lavar"
-}
-```
+#### 🔹 Sugestões com IA
+- `GET /sugestoes/medidor/{medidorId}?dataInicio&dataFim` — retorna `SugestaoIaResponseDTO`
 
----
-
-#### 🔹 **Medições**
-
-`POST /leituras`
-Recebe dados de vazão enviados pelo sensor.
-
-```json
-{
-  "sensorId": 1,
-  "vazao": 2.45,
-  "consumoTotal": 13.7
-}
-```
-
-`GET /leituras/{medidorId}`
-Retorna histórico de medições de um sensor.
+#### 🔹 WebSocket (sensores)
+- Endpoint: `ws://<host>:<port>/ws/sensor/{uuid}`
+- Mensagens de entrada (sensor → servidor):
+  - `01;{medidorId};{consumoLitros};{vazaoLMin}` — registra leitura
+- Comandos de saída (servidor → sensor):
+  - `03;ON` ou `03;OFF` — liga/desliga
 
 ---
 
-#### 🔹 **Usuários**
+### 🗄️ Arquitetura de Banco
 
-`POST /usuarios`
-Cria um novo usuário.
-`GET /usuarios/{id}`
-Retorna dados do usuário.
+Entidades e relacionamentos (simplificado):
 
----
-
-### 🗄️ Banco de dados
-
-Entidades principais:
-
-* `Medidor`
-* `Leitura`
-* `Usuario`
-
----
+- `Usuario (id, nome, email[único], senha, valorM)`
+  - 1:N `Usuario` → `Medidor`
+- `Medidor (id, nome, localizacao, limite, ligado, interromper, usuario_id)`
+  - N:1 `Medidor` → `Usuario`
+  - 1:N `Medidor` → `Leitura`
+- `Leitura (id, medidor_id, litros, litros_acumulado, vazao_l_min, data_hora)`
+  - N:1 `Leitura` → `Medidor`
 
 ---
 
