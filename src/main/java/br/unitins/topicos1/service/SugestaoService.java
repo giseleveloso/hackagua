@@ -10,4 +10,5 @@ public interface SugestaoService {
     SugestaoResponseDTO create(@Valid SugestaoDTO dto);
     List<SugestaoResponseDTO> findByUsuarioId(Long usuarioId);
     List<SugestaoResponseDTO> gerarSugestoesIA(Long usuarioId);
+    String gerarSugestoesIAParaMedidor(Long medidorId, String dataInicio, String dataFim);
 }

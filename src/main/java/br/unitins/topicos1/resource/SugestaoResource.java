@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -44,6 +45,22 @@ public class SugestaoResource {
         } catch (Exception e) {
             LOG.error("Erro ao gerar sugestões", e);
             return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GET
+    @Path("/medidor/{medidorId}")
+    public Response gerarParaMedidor(
+        @PathParam("medidorId") Long medidorId,
+        @QueryParam("dataInicio") String dataInicio,
+        @QueryParam("dataFim") String dataFim
+    ) {
+        LOG.infof("Gerando sugestões IA para medidor: %d", medidorId);
+        try {
+            return Response.ok(sugestaoService.gerarSugestoesIAParaMedidor(medidorId, dataInicio, dataFim)).build();
+        } catch (Exception e) {
+            LOG.error("Erro ao gerar sugestões por medidor", e);
+            return Response.status(Status.BAD_GATEWAY).entity("Resposta IA inválida ou indisponível").build();
         }
     }
 
