@@ -3,6 +3,7 @@ package br.unitins.topicos1.resource.ws;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CompletableFuture;
 
 import org.jboss.logging.Logger;
 
@@ -33,6 +34,8 @@ public class SensorSocket {
     @Inject
     MedidorService medidorService;
 
+    
+
     @OnOpen
     public void onOpen(Session session, @PathParam("uuid") String medidorId) {
         sessions.put(medidorId, session);
@@ -55,7 +58,7 @@ public class SensorSocket {
     public void onMessage(String message, @PathParam("uuid") String medidorId) {
         try {
             LOG.infof("Mensagem recebida do medidor %s: %s", medidorId, message);
-            
+
             String[] parts = message.split(";");
             if (parts.length < 2) {
                 LOG.warnf("Mensagem com formato inválido: %s", message);
@@ -65,21 +68,37 @@ public class SensorSocket {
             switch (parts[0]) {
                 case "01" -> { // Sensor data: 01;{medidorId};{consumoLitros};{vazaoLMin}
                     if (parts.length >= 4) {
-                        leituraService.registrarLeitura(new LeituraDTO(
-                            Long.parseLong(parts[1]), 
-                            BigDecimal.valueOf(Double.parseDouble(parts[2])), 
-                            BigDecimal.valueOf(Double.parseDouble(parts[3]))
-                        ));
-                        LOG.infof("Leitura registrada - Medidor: %s, Consumo: %sL, Vazão: %sL/min", parts[1], parts[2], parts[3]);
+                        long id = Long.parseLong(parts[1]);
+                        BigDecimal consumo = BigDecimal.valueOf(Double.parseDouble(parts[2]));
+                        BigDecimal vazao = BigDecimal.valueOf(Double.parseDouble(parts[3]));
+
+                        CompletableFuture.runAsync(() -> {
+                            leituraService.registrarLeitura(new LeituraDTO(id, consumo, vazao));
+                        }).whenComplete((v, t) -> {
+                            if (t == null) {
+                                LOG.infof("Leitura registrada - Medidor: %s, Consumo: %sL, Vazão: %sL/min", parts[1], parts[2], parts[3]);
+                            } else {
+                                LOG.errorf(t, "Erro ao processar mensagem: %s", message);
+                            }
+                        });
                     } else {
                         LOG.warnf("Mensagem tipo 01 com formato inválido: %s", message);
                     }
                 }
                 case "02" -> { // Status change: 02;{medidorId};{ON/OFF}
                     if (parts.length >= 3) {
+                        long id = Long.parseLong(parts[1]);
                         boolean ligado = "ON".equalsIgnoreCase(parts[2]);
-                        medidorService.updatePowerStatus(Long.parseLong(parts[1]), ligado);
-                        LOG.infof("Status atualizado - Medidor: %s, Ligado: %s", parts[1], ligado);
+
+                        CompletableFuture.runAsync(() -> {
+                            medidorService.updatePowerStatus(id, ligado);
+                        }).whenComplete((v, t) -> {
+                            if (t == null) {
+                                LOG.infof("Status atualizado - Medidor: %s, Ligado: %s", parts[1], ligado);
+                            } else {
+                                LOG.errorf(t, "Erro ao processar mensagem: %s", message);
+                            }
+                        });
                     } else {
                         LOG.warnf("Mensagem tipo 02 com formato inválido: %s", message);
                     }
