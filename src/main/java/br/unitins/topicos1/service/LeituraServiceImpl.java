@@ -46,7 +46,6 @@ public class LeituraServiceImpl implements LeituraService {
         leitura.setMedidor(medidor);
         leitura.setLitros(dto.litros());
         leitura.setLitrosAcumulado(litrosAcumulado);
-
         if (dto.vazaoLMin() != null) {
             leitura.setVazaoLMin(dto.vazaoLMin());
         } else {
@@ -121,12 +120,12 @@ public class LeituraServiceImpl implements LeituraService {
                     false);
         }
 
-        boolean recente = Duration.between(ultima.getDataHora(), LocalDateTime.now()).getSeconds() <= 10;
+        boolean recente = Duration.between(ultima.getDataHora(), LocalDateTime.now()).getSeconds() <= 3;
         if (!recente) {
             return new TempoRealResponseDTO(
                     medidorId,
                     medidor.getNome(),
-                    BigDecimal.ZERO,
+                    ultima.getLitrosAcumulado(),
                     BigDecimal.ZERO,
                     ultima.getDataHora(),
                     false);
@@ -138,7 +137,7 @@ public class LeituraServiceImpl implements LeituraService {
         return new TempoRealResponseDTO(
                 medidorId,
                 medidor.getNome(),
-                ultima.getLitros(),
+                ultima.getLitrosAcumulado(),
                 vazao,
                 ultima.getDataHora(),
                 true);
