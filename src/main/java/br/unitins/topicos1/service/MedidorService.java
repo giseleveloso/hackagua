@@ -16,4 +16,5 @@ public interface MedidorService {
     List<MedidorResponseDTO> findByNome(String nome);
     MedidorResponseDTO setPower(Long id, boolean ligado);
     MedidorResponseDTO togglePower(Long id);
+    void updatePowerStatus(Long id, boolean ligado);
 }
