@@ -15,7 +15,6 @@ public record LeituraResponseDTO(
     LocalDateTime dataHora
 ) {
     public static LeituraResponseDTO valueOf(Leitura leitura) {
-        // Preferir vazão enviada pelo Arduino; se ausente, calcular por 10s
         BigDecimal vazao = leitura.getVazaoLMin() != null
                 ? leitura.getVazaoLMin()
                 : leitura.getLitros().divide(BigDecimal.valueOf(10.0 / 60.0), 3, java.math.RoundingMode.HALF_UP);
