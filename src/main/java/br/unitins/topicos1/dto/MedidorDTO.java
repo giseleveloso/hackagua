@@ -18,5 +18,7 @@ public record MedidorDTO(
 
     Double limite,
 
-    boolean ligado
+    boolean ligado,
+
+    boolean interromper
 ) {}

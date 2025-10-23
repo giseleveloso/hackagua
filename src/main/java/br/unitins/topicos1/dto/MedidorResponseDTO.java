@@ -8,6 +8,7 @@ public record MedidorResponseDTO(
         String localizacao,
         Double limite,
         boolean ligado,
+        boolean interromper,
         Long usuarioId,
         String usuarioNome) {
     public static MedidorResponseDTO valueOf(Medidor medidor) {
@@ -17,6 +18,7 @@ public record MedidorResponseDTO(
                 medidor.getLocalizacao(),
                 medidor.getLimite(),
                 medidor.getLigado(),
+                medidor.getInterromper(),
                 medidor.getUsuario().getId(),
                 medidor.getUsuario().getNome());
     }

@@ -1,3 +1,9 @@
+-- Limpar dados existentes (opcional, mas recomendado)
+-- DELETE FROM leitura;
+-- DELETE FROM sugestao;
+-- DELETE FROM medidor;
+-- DELETE FROM usuario;
+
 -- Inserir Usuários
 INSERT INTO usuario (id, nome, email, senha, valorm) VALUES 
 (1, 'João Silva', 'joao.silva@email.com', '$2a$10$abcdefghijklmnopqrstuvwxyz123456', 5.50),
@@ -6,15 +12,15 @@ INSERT INTO usuario (id, nome, email, senha, valorm) VALUES
 (4, 'Ana Costa', 'ana.costa@email.com', '$2a$10$abcdefghijklmnopqrstuvwxyz123456', 5.80),
 (5, 'Carlos Souza', 'carlos.souza@email.com', '$2a$10$abcdefghijklmnopqrstuvwxyz123456', 5.50);
 
--- Inserir Medidores
-INSERT INTO medidor (id, nome, localizacao, limite, ligado, usuario_id) VALUES 
-(1, 'Medidor Principal', 'Cozinha', 15.0, true, 1),
-(2, 'Medidor Banheiro', 'Banheiro Suite', 10.0, true, 1),
-(3, 'Medidor Jardim', 'Área Externa', 20.0, true, 2),
-(4, 'Medidor Lavanderia', 'Lavanderia', 12.0, false, 2),
-(5, 'Medidor Cozinha', 'Cozinha', 15.0, true, 3),
-(6, 'Medidor Piscina', 'Área de Lazer', 50.0, true, 4),
-(7, 'Medidor Geral', 'Entrada Principal', 25.0, true, 5);
+-- Inserir Medidores 
+INSERT INTO medidor (id, nome, localizacao, limite, interromper, ligado, usuario_id) VALUES 
+(1, 'Medidor Principal', 'Cozinha', 15.0, true, true, 1),
+(2, 'Medidor Banheiro', 'Banheiro Suite', 10.0, true, true, 1),
+(3, 'Medidor Jardim', 'Área Externa', 20.0, true, true, 2),
+(4, 'Medidor Lavanderia', 'Lavanderia', 12.0, false, false, 2),
+(5, 'Medidor Cozinha', 'Cozinha', 15.0, false, true, 3),
+(6, 'Medidor Piscina', 'Área de Lazer', 50.0, false, true, 4),
+(7, 'Medidor Geral', 'Entrada Principal', 25.0, true, true, 5);
 
 -- Inserir Leituras
 INSERT INTO leitura (id, medidor_id, litros, litros_acumulado, data_hora) VALUES 
@@ -51,17 +57,3 @@ INSERT INTO leitura (id, medidor_id, litros, litros_acumulado, data_hora) VALUES
 -- Medidor 7 (Carlos - Geral)
 (19, 7, 18.500, 18.50, '2025-10-01 00:00:00'),
 (20, 7, 22.300, 40.80, '2025-10-02 00:00:00');
-
--- Medidores de Teste Tempo Real
-INSERT INTO medidor (id, nome, localizacao, limite, ligado, usuario_id) VALUES 
-(8, 'Medidor Teste Ligado', 'Laboratório', 15.0, true, 1),
-(9, 'Medidor Teste Desligado', 'Laboratório', 15.0, false, 1);
-
--- Leituras de Teste Tempo Real
--- Medidor 8: última leitura no momento do seed (teste ligado se chamado logo após subir)
-INSERT INTO leitura (id, medidor_id, litros, litros_acumulado, data_hora) VALUES 
-(21, 8, 1.500, 1.50, CURRENT_TIMESTAMP);
-
--- Medidor 9: última leitura antiga (sempre desligado)
-INSERT INTO leitura (id, medidor_id, litros, litros_acumulado, data_hora) VALUES 
-(22, 9, 2.000, 2.00, '2025-09-01 10:00:00');

@@ -5,7 +5,6 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 import br.unitins.topicos1.dto.EstatisticaResponseDTO;
 import br.unitins.topicos1.dto.UsuarioEstatisticaResponseDTO;
