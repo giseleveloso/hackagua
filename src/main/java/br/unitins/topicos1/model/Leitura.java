@@ -21,6 +21,9 @@ public class Leitura extends DefaultEntity {
     @Column(name = "litros_acumulado", precision = 12, scale = 2, nullable = false)
     private BigDecimal litrosAcumulado; 
     
+    @Column(name = "vazao_l_min", precision = 10, scale = 3, nullable = true)
+    private BigDecimal vazaoLMin;
+
     @Column(name = "data_hora", nullable = false)
     private LocalDateTime dataHora;
 
@@ -46,6 +49,14 @@ public class Leitura extends DefaultEntity {
 
     public void setLitrosAcumulado(BigDecimal litrosAcumulado) {
         this.litrosAcumulado = litrosAcumulado;
+    }
+
+    public BigDecimal getVazaoLMin() {
+        return vazaoLMin;
+    }
+
+    public void setVazaoLMin(BigDecimal vazaoLMin) {
+        this.vazaoLMin = vazaoLMin;
     }
 
     public LocalDateTime getDataHora() {

@@ -11,5 +11,8 @@ public record LeituraDTO(
     
     @NotNull(message = "Litros consumidos é obrigatório")
     @Positive(message = "Litros deve ser positivo")
-    BigDecimal litros
+    BigDecimal litros,
+
+    @Positive(message = "Vazão deve ser positiva")
+    BigDecimal vazaoLMin
 ) {}

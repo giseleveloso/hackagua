@@ -6,11 +6,11 @@
 
 -- Inserir Usuários
 INSERT INTO usuario (id, nome, email, senha, valorm) VALUES 
-(1, 'João Silva', 'joao.silva@email.com', '$2a$10$abcdefghijklmnopqrstuvwxyz123456', 5.50),
-(2, 'Maria Santos', 'maria.santos@email.com', '$2a$10$abcdefghijklmnopqrstuvwxyz123456', 5.50),
-(3, 'Pedro Oliveira', 'pedro.oliveira@email.com', '$2a$10$abcdefghijklmnopqrstuvwxyz123456', 6.00),
-(4, 'Ana Costa', 'ana.costa@email.com', '$2a$10$abcdefghijklmnopqrstuvwxyz123456', 5.80),
-(5, 'Carlos Souza', 'carlos.souza@email.com', '$2a$10$abcdefghijklmnopqrstuvwxyz123456', 5.50);
+(1, 'João Silva', 'joao.silva@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 5.50),
+(2, 'Maria Santos', 'maria.santos@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 5.50),
+(3, 'Pedro Oliveira', 'pedro.oliveira@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 6.00),
+(4, 'Ana Costa', 'ana.costa@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 5.80),
+(5, 'Carlos Souza', 'carlos.souza@email.com', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 5.50);
 
 -- Inserir Medidores 
 INSERT INTO medidor (id, nome, localizacao, limite, interromper, ligado, usuario_id) VALUES 

@@ -47,6 +47,12 @@ public class LeituraServiceImpl implements LeituraService {
         leitura.setMedidor(medidor);
         leitura.setLitros(dto.litros());
         leitura.setLitrosAcumulado(litrosAcumulado);
+        // Se vazão veio do Arduino, persiste; senão calcula com base em 10s
+        if (dto.vazaoLMin() != null) {
+            leitura.setVazaoLMin(dto.vazaoLMin());
+        } else {
+            leitura.setVazaoLMin(dto.litros().divide(BigDecimal.valueOf(10.0 / 60.0), 3, RoundingMode.HALF_UP));
+        }
         leitura.setDataHora(LocalDateTime.now());
 
         leituraRepository.persist(leitura);
@@ -135,7 +141,9 @@ public class LeituraServiceImpl implements LeituraService {
             );
         }
 
-        BigDecimal vazao = ultima.getLitros().divide(BigDecimal.valueOf(10.0 / 60.0), 3, RoundingMode.HALF_UP);
+        BigDecimal vazao = ultima.getVazaoLMin() != null
+            ? ultima.getVazaoLMin()
+            : ultima.getLitros().divide(BigDecimal.valueOf(10.0 / 60.0), 3, RoundingMode.HALF_UP);
         return new TempoRealResponseDTO(
             medidorId,
             medidor.getNome(),
