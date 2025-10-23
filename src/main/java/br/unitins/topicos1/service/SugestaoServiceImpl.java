@@ -19,7 +19,6 @@ import br.unitins.topicos1.repository.MedidorRepository;
 import br.unitins.topicos1.repository.SugestaoIaRepository;
 import br.unitins.topicos1.repository.UsuarioRepository;
 import br.unitins.topicos1.validation.ValidationException;
-import io.smallrye.config.ConfigMapping;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -107,7 +106,7 @@ public class SugestaoServiceImpl implements SugestaoService {
                             i.getEconomiaEstimadaReais()))
                     .toList();
 
-            return new SugestaoIaResponseDTO(medidor.getId(), entidade.getObservacoes(), entidade.getDataHora(), itens);
+            return new SugestaoIaResponseDTO(medidor.getId(), entidade.getObservacoes(), itens);
         } catch (Exception e) {
             throw new RuntimeException("Falha ao chamar Gemini", e);
         }
