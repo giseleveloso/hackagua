@@ -9,8 +9,8 @@ O sistema coleta dados de sensores físicos, envia ao backend desenvolvido em **
 
 ## 🚀 Tecnologias utilizadas
 
-**Backend:** Quarkus, Java, RESTEasy, Hibernate e PostgreSQL para homologação
-**Frontend:** FlutterFlow, Firebase 
+**Backend:** Quarkus, Java, RESTEasy, Hibernate, PostgreSQL (para homologação)
+**Frontend:** FlutterFlow 
 **Banco de dados:** MariaDB
 **Integração:** HTTP para integrar com o sensor
 
@@ -45,7 +45,7 @@ src/
 ```json
 {
   "token": "<jwt_token>",
-  "expires_in": 3600
+  "Usuario": <Usuario>
 }
 ```
 
@@ -114,41 +114,11 @@ Retorna dados do usuário.
 
 Entidades principais:
 
-* `Medidor(id, nome, localizacao, limite)`
-* `Leitura(id, sensor_id, vazao, volume, timestamp)`
-* `Usuario(id, nome, email, senha, valorM)`
+* `Medidor`
+* `Leitura`
+* `Usuario`
 
 ---
-
-## 📱 Frontend (FlutterFlow)
-
-### 📋 Telas principais
-
-* **Login e cadastro**
-* **Home com dados gerais e de cada medidor** (mostra consumo e vazão em tempo real)
-* **Dashboard** (detalhamento avançado dos dados monitorados)
-* **Histórico de medições**
-* **Configuração de sensores**
-
-### 🔌 Integração com API
-
-* Método: REST API (GET/POST)
-* Base URL: `<https://aqualy.com>`
-* Autenticação: Bearer Token (JWT)
-
-**Exemplo de integração (FlutterFlow Action):**
-
-```dart
-POST /leituras
-Headers:
-  Authorization: Bearer <token>
-Body:
-  {
-    "sensorId": 1,
-    "vazao": 3.12,
-    "limite": 27.8
-  }
-```
 
 ---
 
@@ -158,18 +128,7 @@ Body:
 
 * Sensor: `Sensor de vazão - modelo YF-S201`
 * Controlador: `ESP32`
-* Comunicação: `<HTTP / MQTT / Serial>`
-* Frequência de envio: `<ex: a cada 5 segundos>`
-
-**Exemplo de payload enviado ao backend:**
-
-```json
-{
-  "sensorId": 1,
-  "flowRate": 1.86,
-  "volume": 12.5
-}
-```
+* Comunicação: `<HTTP / MQTT / Serial / WebSocket>`
 
 ---
 
@@ -188,42 +147,22 @@ git clone https://github.com/giseleveloso/hackagua.git
 **Variáveis de ambiente:**
 
 ```
-DB_URL=jdbc:postgresql://localhost:5432/water
-DB_USER=admin
-DB_PASS=1234
-JWT_SECRET=seu_token_aqui
+DEV_DB_TYPE=postgresql
+DEV_DB_USER=topicos1
+DEV_DB_PASSWORD=123456
+DEV_DB_ADDRESS=jdbc:postgresql://localhost:5432/hackagua
+DEV_DB_NAME=aqualy
+
+GEMINI_API_KEY=AIzaSyAeChHj8i7ifk08eRlcF-j2TZDDJSkgMhM
+
+QUARKUS_HTTP_PORT=10017
 ```
-
----
-
-### 📱 Frontend (FlutterFlow)
-
-1. Abrir o projeto no FlutterFlow.
-2. Atualizar a URL da API em **App Settings > API Configuration**.
-3. Publicar o app (web ou mobile).
 
 ---
 
 ## 🧪 Testes
 
-Para testar o envio de dados manualmente:
-
-```bash
-curl -X POST https://api.seuprojeto.com/measurements \
-  -H "Content-Type: application/json" \
-  -d '{"sensorId":1,"flowRate":2.8,"volume":14.2}'
-```
-
----
-
-## 🧭 Roadmap
-
-* [x] Criar o backend funcional
-* [x] Integrar o frontend com o backend
-* [ ] Desenvolver a parte dos sensores isoladamente
-* [ ] Integrar os sensores com o backend
-* [ ] Implementar alertas de vazamento
-* [ ] Criar dashboard em tempo real
+Para testar o envio de dados utilizamos o Swagger UI
 
 ---
 
