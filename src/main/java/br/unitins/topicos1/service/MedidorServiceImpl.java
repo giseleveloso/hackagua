@@ -2,6 +2,8 @@ package br.unitins.topicos1.service;
 
 import java.util.List;
 
+import org.jboss.logging.Logger;
+
 import br.unitins.topicos1.dto.MedidorDTO;
 import br.unitins.topicos1.dto.MedidorResponseDTO;
 import br.unitins.topicos1.model.Medidor;
@@ -17,6 +19,8 @@ import jakarta.validation.Valid;
 
 @ApplicationScoped
 public class MedidorServiceImpl implements MedidorService {
+
+    private static final Logger LOG = Logger.getLogger(MedidorServiceImpl.class);
 
     @Inject
     public MedidorRepository medidorRepository;
@@ -147,5 +151,15 @@ public class MedidorServiceImpl implements MedidorService {
             // apenas logar; manter estado no banco
         }
         return MedidorResponseDTO.valueOf(medidor);
+    }
+
+    @Override
+    @Transactional
+    public void updatePowerStatus(Long id, boolean ligado) {
+        Medidor medidor = medidorRepository.findById(id);
+        if (medidor != null) {
+            medidor.setLigado(ligado);
+            LOG.infof("Status do medidor atualizado no banco - ID: %d, Ligado: %s", id, ligado);
+        }
     }
 }
