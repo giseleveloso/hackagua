@@ -8,7 +8,7 @@ import jakarta.validation.Valid;
 
 public interface MedidorService {
     MedidorResponseDTO create(@Valid MedidorDTO dto);
-    void update(Long id, MedidorDTO dto);
+    MedidorResponseDTO update(Long id, MedidorDTO dto);
     void delete(Long id);
     MedidorResponseDTO findById(Long id);
     List<MedidorResponseDTO> findAll();

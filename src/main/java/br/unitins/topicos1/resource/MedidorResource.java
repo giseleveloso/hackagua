@@ -73,8 +73,7 @@ public class MedidorResource {
     @Path("/{id}")
     public Response update(@PathParam("id") Long id, @Valid MedidorDTO dto) {
         LOG.infof("Atualizando medidor com id: %d", id);
-        medidorService.update(id, dto);
-        return Response.status(Status.NO_CONTENT).build();
+        return Response.ok(medidorService.update(id, dto)).build();
     }
 
     @DELETE

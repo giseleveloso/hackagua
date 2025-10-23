@@ -52,7 +52,7 @@ public class MedidorServiceImpl implements MedidorService {
 
     @Override
     @Transactional
-    public void update(Long id, MedidorDTO dto) {
+    public MedidorResponseDTO update(Long id, MedidorDTO dto) {
         Medidor medidor = medidorRepository.findById(id);
 
         if (medidor == null)
@@ -68,7 +68,7 @@ public class MedidorServiceImpl implements MedidorService {
         medidor.setLimite(dto.limite());
         medidor.setLigado(dto.ligado());
         medidor.setInterromper(dto.interromper());
-
+        return MedidorResponseDTO.valueOf(medidor);
     }
 
     @Override
