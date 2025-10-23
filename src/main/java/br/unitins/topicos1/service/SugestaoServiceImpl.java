@@ -89,7 +89,7 @@ public class SugestaoServiceImpl implements SugestaoService {
                 + "SCHEMA EXATO:\n"
                 + "{\\n  \"observacoes\": \"string não vazia\",\\n  \"sugestoes\": [\\n    { \\n      \"titulo\": \"string não vazia\",\\n      \"descricao\": \"string não vazia\",\\n      \"economiaEstimadaReais\": number \\n    }\\n  ]\\n}\n"
                 + "VALIDAÇÃO:\n- Caso um campo fique vazio, reescreva o conteúdo para cumprir as regras antes de responder.\n"
-                + "SAÍDA:\n- Máx. 5 sugestões; no mínimo 2. Retorne APENAS o JSON final válido.";
+                + "SAÍDA:\n- Exatamente 5 sugestões;. Retorne APENAS o JSON final válido.";
 
         if (apiKey == null || apiKey.isBlank())
             throw new ValidationException("apiKey", "GEMINI_API_KEY não configurada");
