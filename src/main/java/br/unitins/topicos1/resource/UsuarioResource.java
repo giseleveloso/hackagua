@@ -3,6 +3,7 @@ package br.unitins.topicos1.resource;
 import org.jboss.logging.Logger;
 
 import br.unitins.topicos1.dto.UsuarioDTO;
+import br.unitins.topicos1.dto.UsuarioUpdateDTO;
 import br.unitins.topicos1.service.UsuarioService;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -63,7 +64,7 @@ public class UsuarioResource {
 
     @PUT
     @Path("/{id}")
-    public Response update(@PathParam("id") Long id, @Valid UsuarioDTO dto) {
+    public Response update(@PathParam("id") Long id, @Valid UsuarioUpdateDTO dto) {
         LOG.infof("Atualizando usuário com id: %d", id);
         return Response.ok(usuarioService.update(id, dto)).build();
     }

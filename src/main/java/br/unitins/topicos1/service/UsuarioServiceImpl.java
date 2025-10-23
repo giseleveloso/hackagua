@@ -4,6 +4,7 @@ import java.util.List;
 
 import br.unitins.topicos1.dto.UsuarioDTO;
 import br.unitins.topicos1.dto.UsuarioResponseDTO;
+import br.unitins.topicos1.dto.UsuarioUpdateDTO;
 import br.unitins.topicos1.model.Usuario;
 import br.unitins.topicos1.repository.UsuarioRepository;
 import br.unitins.topicos1.util.HashUtil;
@@ -42,7 +43,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     @Transactional
-    public UsuarioResponseDTO update(Long id, UsuarioDTO dto) {
+    public UsuarioResponseDTO update(Long id, UsuarioUpdateDTO dto) {
         Usuario usuario = usuarioRepository.findById(id);
 
         if (usuario == null)
